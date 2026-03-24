@@ -1,0 +1,11 @@
+# 실행 파일 (Makefile에서 설정한 TARGET 이름)
+movie-app
+
+# 오브젝트 파일 (컴파일 중간 결과물)
+*.o
+
+# VS Code 설정 폴더
+.vscode/
+
+# 운영체제 임시 파일 (Mac 쓰는 경우 대비)
+.DS_Store
