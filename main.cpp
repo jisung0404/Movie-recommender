@@ -2,6 +2,7 @@
 #include "User.h"
 #include "Rating.h"
 #include <iostream>
+#include <vector>
 
 int main() {
     
@@ -12,21 +13,30 @@ int main() {
     m1.addRating(4.4);
     m2.addRating(4.6);
 
-    std::cout << "==== 영화 정보 ====" << std::endl;
-    m1.display();
-    // 출력: 1. 왕과사는남자 (2026)  평점: 4.4 (1건)
-    m2.display(); 
-    // 출력: 2. 극한직업 (2019)  평점: 4.6 (1건)
-    std::cout << std::endl;
+        // 벡터
+    std::vector<Movie> movieList; 
+    movieList.push_back(m1);
+    movieList.push_back(m2);
 
+
+    std::cout << "==== 영화 정보 ====" << std::endl;
+    // 영화 목록 출력 (벡터 순회)
+    for (const auto& movie : movieList) {
+        movie.display();
+    }
 
     // #2 User 생성 및 테스트
     User u1(1, "김지성", "skhanesa08@gmail.com");
+    
+    //벡터
+    std::vector<User> userList;
+    userList.push_back(u1);
 
     std::cout << "=== 사용자 정보 ===" << std::endl;
-    u1.display();
-    // 출력: [1] 김지성 (skhaensa08@gmail.com)
-    std::cout << std::endl;
+    // 사용자 목록 출력 (벡터 순회)
+    for (const auto& user : userList) {
+        user.display();
+    }
 
     
     // #3 Rating 생성 및 테스트
@@ -36,7 +46,6 @@ int main() {
     std::cout << "=== 개별 평점 내역 ===" << std::endl;
     r1.display();
     r2.display();
-    std::cout << std::endl;
 
 
     // #4 Movie 클래스 추가 기능 테스트
