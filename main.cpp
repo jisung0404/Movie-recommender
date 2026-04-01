@@ -51,7 +51,7 @@ int main() {
     // #4 Movie 클래스 추가 기능 테스트
     std::cout << "=== 영화 평점 업데이트 테스트 ===" << std::endl;
     m1.addRating(5.0);
-    m1.addRating(6.0);   // 유효성 검사 -> 무시됨
+    m1.addRating(6.0);   // 유효성 검사
 
     
     std::cout << m1.getTitle() << ": "

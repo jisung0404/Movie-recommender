@@ -25,13 +25,19 @@ double Movie::getAverageRating() const {
 }
 
 void Movie::addRating(double r) {
-    if (r < 0.0 || r > 5.0) return;    // 유효성 검사
+    if (r < 0.0) {
+        std::cout << "~입력 평점 0.0으로 재조정~\n";
+        r = 0.0;
+    } else if (r > 5.0) {
+        std::cout << "~입력 평점 5.0으로 재조정~\n";
+        r = 5.0;
+    }
     totalRating += r;
     ratingCount++;
 }
 
 void Movie::display() const {           // 중복 제거 — 하나만 유지
-    std::cout << id << ". " << title
+    std::cout << "["  << id << "] "   << title
               << " (" << releaseYear << ")"
               << "  평점: " << getAverageRating()
               << " (" << ratingCount << "건)"

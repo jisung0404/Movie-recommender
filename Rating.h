@@ -2,20 +2,20 @@
 
 class Rating {
 private:
-    int    userId;
-    int    movieId;
-    double score;
+    int     userId;
+    int     movieId;
+    double  score;
 public:
     
     Rating();
 
     Rating(int uId, int mId, double s);
 
-    int    getUserId() const;
-    int    getMovieId() const;
-    double getScore() const;
+    int         getUserId()     const;
+    int         getMovieId()    const;
+    double      getScore()      const;
+    void        display()       const;
 
-    void display() const;
 };
 
 

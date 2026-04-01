@@ -12,6 +12,7 @@ private:
 
 public:
     Movie();                    // 기본 생성자 추가
+
     Movie(int id, const std::string& title,
           const std::string& genre, int year);
 
@@ -22,6 +23,6 @@ public:
     double      getAverageRating()   const;  // getRating → getAverageRating
     int         getRatingCount()     const;  // 추가
 
-    void addRating(double r);               // 추가
-    void display()               const;
+    void        addRating(double r);               // 추가
+    void        display()            const;
 };

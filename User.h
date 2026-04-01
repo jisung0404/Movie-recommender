@@ -12,10 +12,10 @@ public:
 
     User(int id, const std::string& name, const std::string& email);
 
-    int         getId() const;
-    std::string getName() const;
-    std::string getEmail() const;
+    int         getId()     const;
+    std::string getName()   const;
+    std::string getEmail()  const;
 
-    void display() const;
+    void        display()   const;
 
 };
