@@ -18,4 +18,6 @@ public:
 
     void        display()   const;
 
+    bool                    operator==(const User& other) const; // 이름 검색용
+    friend std::ostream&    operator<<(std::ostream& os, const User& u); // 출력용
 };
