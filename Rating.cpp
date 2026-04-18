@@ -32,4 +32,11 @@ void   Rating::display()        const {
               << score << "\n";        
 }
 
+// --- [M2 추가] 연산자 오버로딩 구현부 ---
 
+// << 연산자: 평점 정보 연쇄 출력
+std::ostream& operator<<(std::ostream& os, const Rating& r) {
+    os << "User [" << r.getUserId() << "] -> Movie [" 
+       << r.getMovieId() << "] : 평점 " << r.getScore();
+    return os;
+}
