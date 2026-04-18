@@ -25,3 +25,9 @@ void        User::display()        const {
 bool        User::operator==(const User& other) const {
     return this->name == other.name;
 }
+
+// << 연산자: 사용자 정보 연쇄 출력
+std::ostream&     operator<<(std::ostream& os, const User& u) {
+    os << "[" << u.getId() << "] " << u.getName() << " (" << u.getEmail() << ")";
+    return os;
+}
