@@ -18,3 +18,15 @@ Movie* MovieManager::findByTitle(const string& title) {
     }
     return nullptr;                  // 찾아보고 없으면 nullptr 반환 (방어적 프로그래밍) 
 }
+
+// 3. 평점순 정렬
+void MovieManager::sortByRating() {
+    sort(movies.begin(), movies.end()); 
+}
+
+// 4. 전체 출력
+void MovieManager::printAll() const {
+    for (const Movie& m : movies) {
+        cout << m << endl; 
+    }
+}
