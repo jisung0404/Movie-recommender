@@ -4,7 +4,7 @@ CXXFLAGS = -Wall -std=c++17 -g
 #실행파일 이름
 TARGET = movie-app
 #컴파일 할 갹체 파일들
-OBJS = Movie.o User.o Rating.o main.o
+OBJS = main.o Movie.o User.o Rating.o MovieManager.o UserManager.o RatingManager.o
 
 #빌드 규칙
 $(TARGET): $(OBJS)
