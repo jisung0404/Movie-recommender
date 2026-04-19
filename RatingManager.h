@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include "Rating.h"
 #include "BaseManager.h"
