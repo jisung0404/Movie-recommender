@@ -3,7 +3,7 @@
 
 using namespace std;
 
-// 1. 평점 추가
+// 1. 평점 추가 로직
 void RatingManager::addRating(int userId, int movieId, double score) {
     Rating newRating(userId, movieId, score);
     ratings.push_back(newRating);
@@ -17,6 +17,9 @@ void RatingManager::printRatingsByMovie(int targetMovieId) const {
             cout << r << endl;
             found = true;
         }
+    }
+    if (found == false) {
+        cout << "해당 영화에 등록된 평점이 없습니다." << endl;
     }
 }
 
