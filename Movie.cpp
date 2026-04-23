@@ -36,14 +36,6 @@ void Movie::addRating(double r) {
     ratingCount++;
 }
 
-void Movie::display() const {           // 중복 제거 — 하나만 유지
-    std::cout << "["  << id << "] "   << title
-              << " (" << releaseYear << ")"
-              << "  평점: " << getAverageRating()
-              << " (" << ratingCount << "건)"
-              << std::endl;
-}
-
 // --- [M2 추가] 연산자 오버로딩 구현부 ---
 // == 연산자: 제목과 개봉 연도가 같으면 같은 영화로 취급
 bool Movie::operator==(const Movie& other) const {
