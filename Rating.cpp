@@ -25,13 +25,6 @@ int    Rating::getUserId()      const { return userId; }
 int    Rating::getMovieId()     const { return movieId; }
 double Rating::getScore()       const { return score; }
 
-void   Rating::display()        const {
-    std::cout << "User [" << userId 
-              << "] -> Movie [" 
-              << movieId << "] : 평점 " 
-              << score << "\n";        
-}
-
 // --- [M2 추가] 연산자 오버로딩 구현부 ---
 
 // << 연산자: 평점 정보 연쇄 출력
