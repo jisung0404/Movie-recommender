@@ -24,7 +24,6 @@ public:
     int         getRatingCount()     const;  // 추가
 
     void        addRating(double r);               // 추가
-    void        display()            const;
 
     bool        operator==(const Movie& other)  const; // 제목이나 ID로 검색할 때 사용
     bool        operator<(const Movie& other)   const;  // 평점순 정렬할 때 사용
