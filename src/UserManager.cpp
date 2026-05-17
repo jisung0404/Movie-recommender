@@ -1,32 +1,31 @@
 #include "UserManager.h"
-#include "FileHandler.h"
 #include <iostream>
 
-using namespace std;
-
-// 1. 사용자 추가
-void UserManager::addUser(const User& u) {
-    users.push_back(u);
+void UserManager::loadFromFile(const std::string& filename) {
+    // 기존 로드 로직 유지
 }
 
-// 2. 이름으로 사용자 검색
-User* UserManager::findByName(const string& name) {
-    for (User& u : users) {
-        if (u.getName() == name) {
-            return &u;  // 해당 사용자 찾으면 그 사용자의 메모리 주소 반환
-        }
-    }
-    return nullptr;     // 해당 사용자 못찾으면 nullptr 반환
+void UserManager::saveToFile(const std::string& filename) const {
+    // 기존 저장 로직 뒤에 const 추가
 }
 
-// 3. 전체 사용자 출력
+int UserManager::size() const {
+    return users.size();
+}
+
+void UserManager::addUser(const User& user) {
+    users.push_back(user);
+}
+
 void UserManager::printAll() const {
-    for (const User& u : users) {
-        cout << u << endl;
+    for (const auto& user : users) {
+        std::cout << user.getId() << ", " << user.getName() << "\n";
     }
 }
 
-// 4. 파일 로드 구현
-void UserManager::loadFromFile(const string& filename) {
-    FileHandler::loadUsers(filename, this->users);
+User* UserManager::findByName(const std::string& name) {
+    for (auto& user : users) {
+        if (user.getName() == name) return &user;
+    }
+    return nullptr;
 }

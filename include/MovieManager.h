@@ -1,4 +1,6 @@
-#pragma once
+#ifndef MOVIE_MANAGER_H
+#define MOVIE_MANAGER_H
+
 #include <vector>
 #include <string>
 #include "Movie.h"
@@ -7,16 +9,18 @@
 class MovieManager : public BaseManager {
 private:
     std::vector<Movie> movies;
-
 public:
-    void addMovie(const Movie& m);
+    void loadFromFile(const std::string& filename) override;
+    // 뒤에 const를 붙여서 구현부와 상속 구조를 일치시킴
+    void saveToFile(const std::string& filename) const override;
+    int size() const override;
     
-    // 못 찾으면 nullptr을 뱉어야 해서 포인터(*) 타입으로 반환
-    Movie* findByTitle(const std::string& title);
-    
-    void sortByRating();
-    
-    void printAll() const override; 
+    void addMovie(const Movie& movie);
+    void printAll() const;
+    const std::vector<Movie>& getMovies() const { return movies; }
 
-    void loadFromFile(const std::string& filename);
+    Movie* findByTitle(const std::string& title);
+    void sortByRating();
 };
+
+#endif
