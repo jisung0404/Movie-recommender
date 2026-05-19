@@ -11,14 +11,14 @@ private:
     std::vector<User> users;
 public:
     void loadFromFile(const std::string& filename) override;
-    // 뒤에 const를 붙여서 구현부와 상속 구조를 일치시킴
     void saveToFile(const std::string& filename) const override;
     int size() const override;
     
     void addUser(const User& user);
     void printAll() const;
 
-    User* findByName(const std::string& name);
+    // 변경: 유저 ID로 검색하는 함수
+    User* findById(int id);
 };
 
 #endif

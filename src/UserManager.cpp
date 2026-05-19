@@ -61,9 +61,11 @@ void UserManager::printAll() const {
     }
 }
 
-User* UserManager::findByName(const std::string& name) {
+User* UserManager::findById(int id) {
     for (auto& user : users) {
-        if (user.getName() == name) return &user;
+        if (user.getId() == id) {
+            return &user; // 일치하는 유저를 찾으면 주소 반환
+        }
     }
-    return nullptr;
+    return nullptr; // 찾지 못하면 nullptr 반환
 }

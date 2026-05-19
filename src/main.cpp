@@ -6,7 +6,6 @@
 #include "RatingManager.h"
 
 int main() {
-    // 1. 매니저 객체 선언 및 데이터 파일 로드
     MovieManager movieMgr;
     UserManager userMgr;
     RatingManager ratingMgr;
@@ -17,7 +16,6 @@ int main() {
 
     int menuChoice = 0;
 
-    // 2. 사용자가 종료(5번)를 누르기 전까지 무한 루프 돌리기
     while (true) {
         std::cout << "\n=======================================\n";
         std::cout << "▶ 현재 로드 현황 - 영화: " << movieMgr.size() 
@@ -28,19 +26,20 @@ int main() {
         std::cout << " 2. 새로운 영화(Movie) 등록\n";
         std::cout << " 3. 새로운 평점(Rating) 등록\n";
         std::cout << " 4. 등록된 영화 기준 장르 추천 실행\n";
-        std::cout << " 5. 시스템 종료 및 변경 사항 저장 (Save & Exit)\n";
+        std::cout << " 5. 등록된 사용자 ID 검색\n"; // 💡 메뉴 텍스트 변경!
+        std::cout << " 6. 시스템 종료 및 변경 사항 저장 (Save & Exit)\n";
         std::cout << "=======================================\n";
         std::cout << "원하는 작업 번호를 선택하세요: ";
         std::cin >> menuChoice;
-        std::cin.ignore(); // 숫자 입력 후 버퍼에 남은 엔터('\n') 제거
+        std::cin.ignore(); 
 
-        if (menuChoice == 5) {
-            std::cout << "\n💾 데이터 변경 사항을 CSV 파일들에 영구 저장 중...\n";
+        if (menuChoice == 6) { // 종료 번호를 6번으로 조정
+            std::cout << "\n데이터 변경 사항을 CSV 파일들에 영구 저장 중...\n";
             movieMgr.saveToFile("data/movies.csv");
             userMgr.saveToFile("data/users.csv");
             ratingMgr.saveToFile("data/ratings.csv");
             std::cout << "안전하게 종료되었습니다. 수고하셨습니다!\n";
-            break; // 루프 탈출 후 프로그램 종료
+            break; 
         }
 
         switch (menuChoice) {
@@ -51,8 +50,10 @@ int main() {
                 std::cout << "유저 이름 입력: "; std::getline(std::cin, newUserName);
                 std::cout << "유저 이메일 입력: "; std::getline(std::cin, newUserEmail);
                 
-                userMgr.addUser(User(newUserId, newUserName, newUserEmail));
-                std::cout << "사용자 등록 완료!\n";
+                User newUser(newUserId, newUserName, newUserEmail);
+                userMgr.addUser(newUser);
+                
+                std::cout << "사용자 등록 완료 -> " << newUser << "\n";
                 break;
             }
             case 2: {
@@ -63,8 +64,10 @@ int main() {
                 std::cout << "영화 장르 입력: "; std::getline(std::cin, newMovieGenre);
                 std::cout << "영화 개봉 연도 입력: "; std::cin >> newMovieYear;
                 
-                movieMgr.addMovie(Movie(newMovieId, newMovieTitle, newMovieGenre, newMovieYear));
-                std::cout << "영화 등록 완료!\n";
+                Movie newMovie(newMovieId, newMovieTitle, newMovieGenre, newMovieYear);
+                movieMgr.addMovie(newMovie);
+                
+                std::cout << "영화 등록 완료 -> " << newMovie << "\n";
                 break;
             }
             case 3: {
@@ -92,7 +95,6 @@ int main() {
                 std::cout << "\n추천의 기준이 될 영화 제목을 입력하세요: ";
                 std::getline(std::cin, targetTitle);
                 
-                // 영화 제목으로 검색해서 객체 포인터 가져오기
                 Movie* targetPtr = movieMgr.findByTitle(targetTitle);
                 if (targetPtr == nullptr) {
                     std::cout << "입력한 제목의 영화를 찾을 수 없습니다.\n";
@@ -104,14 +106,29 @@ int main() {
                         std::cout << "- 동일한 장르의 다른 추천 영화가 없습니다.\n";
                     } else {
                         for (const auto& movie : recommendations) {
-                            std::cout << "- 제목: " << movie.getTitle() << " | 장르: " << movie.getGenre() << "\n";
+                            std::cout << "- " << movie << "\n";
                         }
                     }
                 }
                 break;
             }
+            case 5: { 
+                std::cout << "\n--- [5] 등록된 사용자 ID 검색 ---\n";
+                int searchId;
+                std::cout << "검색할 유저의 ID(숫자)를 입력하세요: ";
+                std::cin >> searchId;
+                std::cin.ignore(); // 숫자 입력 후 버퍼 엔터값 삭제
+
+                User* foundUser = userMgr.findById(searchId);
+                if (foundUser == nullptr) {
+                    std::cout << "ID [" << searchId << "] 사용자를 시스템에서 찾을 수 없습니다.\n";
+                } else {
+                    std::cout << "검색 결과 발견! -> " << *foundUser << "\n";
+                }
+                break;
+            }
             default:
-                std::cout << "잘못된 번호입니다. 1번부터 5번 사이의 숫자를 입력해 주세요.\n";
+                std::cout << "잘못된 번호입니다. 1번부터 6번 사이의 숫자를 입력해 주세요.\n";
                 break;
         }
     }
