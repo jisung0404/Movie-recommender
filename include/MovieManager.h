@@ -10,9 +10,6 @@ class MovieManager : public BaseManager {
 private:
     std::vector<Movie> movies;
 
-    // 교안 12p: 장르 기반 유사도 계산 헬퍼 함수
-    int calculateGenreSimilarity(const std::string& genreA, const std::string& genreB);
-
 public:
     void loadFromFile(const std::string& filename) override;
     void saveToFile(const std::string& filename) const override;
@@ -25,7 +22,7 @@ public:
     Movie* findByTitle(const std::string& title);
     void sortByRating();
 
-    // 교안 12p: MovieManager 자체에 위치해야 하는 필수 recommend 메서드
+    // MovieManager 자체에 위치하면서 N개 목록을 반환하는 recommend 함수
     std::vector<Movie> recommend(const Movie& targetMovie, int N = 5);
 };
 
