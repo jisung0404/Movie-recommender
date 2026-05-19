@@ -1,11 +1,19 @@
-# 실행 파일 (Makefile에서 설정한 TARGET 이름)
+# - 컴파일 산출물 무시
+*.o
+*.a
+*.out
+
+# - obj/ 디렉토리째 무시 (교안 권장 패턴 A)
+obj/
+
+# - 실행 파일 (Makefile target) 무시
+main
 movie-app
 
-# 오브젝트 파일 (컴파일 중간 결과물)
-*.o
-
-# VS Code 설정 폴더
+# - IDE/에디터 개인 설정 무시
 .vscode/
+.idea/
 
-# 운영체제 임시 파일 (Mac 쓰는 경우 대비)
+# - OS 자동 생성 파일 무시
 .DS_Store
+Thumbs.db
