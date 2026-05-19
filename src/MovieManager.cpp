@@ -5,11 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <stdexcept> // std::invalid_argument 예외 처리용 헤더 추가!
-
-// =================================================================
-// 💡 [완벽] 파일 입출력 및 기존 메서드 영역 (stoi 예외 완벽 방어)
-// =================================================================
+#include <stdexcept>
 
 void MovieManager::loadFromFile(const std::string& filename) {
     std::ifstream file(filename); 
@@ -32,7 +28,6 @@ void MovieManager::loadFromFile(const std::string& filename) {
         std::getline(ss, genre, ',');   
         std::getline(ss, extraStr, ','); 
         
-        // 🚀 핵심 로직: stoi 터지는 현상 완벽 방어 (try-catch 적용)
         try {
             int id = std::stoi(idStr);      
             int extraVal = extraStr.empty() ? 0 : std::stoi(extraStr);
@@ -52,11 +47,15 @@ void MovieManager::loadFromFile(const std::string& filename) {
 void MovieManager::saveToFile(const std::string& filename) const {
     std::ofstream file(filename); 
     if (!file.is_open()) {
+        std::cout << "파일을 열 수 없습니다: " << filename << "\n";
         return;
     }
 
     for (const auto& movie : movies) {
-        file << movie.getId() << "," << movie.getTitle() << "," << movie.getGenre() << "\n";
+        file << movie.getId() << "," 
+             << movie.getTitle() << "," 
+             << movie.getGenre() << "," 
+             << movie.getReleaseYear() << "\n";
     }
     file.close();
 }
@@ -85,11 +84,6 @@ Movie* MovieManager::findByTitle(const std::string& title) {
 void MovieManager::sortByRating() {
     // 기존 정렬 로직 유지
 }
-
-
-// =================================================================
-// 🚀 12주차 M3 새 명세: 100% 배운 문법 기반 장르 추천 알고리즘
-// =================================================================
 
 int MovieManager::calculateGenreSimilarity(const std::string& genreA, const std::string& genreB) {
     if (genreA.empty() || genreB.empty()) return -100;
