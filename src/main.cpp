@@ -1,36 +1,24 @@
 #include <iostream>
 #include <vector>
 #include "MovieManager.h"
-#include "UserManager.h"
-#include "RatingManager.h"
-#include "Recommender.h"
 
 int main() {
     MovieManager movieMgr;
-    UserManager userMgr;
-    RatingManager ratingMgr;
-
     movieMgr.loadFromFile("data/movies.csv");
-    userMgr.loadFromFile("data/users.csv");
-    ratingMgr.loadFromFile("data/ratings.csv");
 
-    Recommender recommender(movieMgr, ratingMgr);
+    if (movieMgr.size() > 0) {
+        // 첫 번째 영화를 기준으로 장르 기반 추천 실행
+        Movie target = movieMgr.getMovies()[0]; 
+        std::vector<Movie> recommendations = movieMgr.recommend(target, 5);
 
-    int targetUser = 1;
-    std::vector<Movie> recommendations = recommender.recommend(targetUser, 5, 3);
-
-    std::cout << "=== User " << targetUser << " 추천 영화 목록 ===\n";
-    if (recommendations.empty()) {
-        std::cout << "추천할 영화가 없습니다.\n";
-    } else {
+        std::cout << "=== [" << target.getTitle() << "] 장르 기반 추천 결과 ===\n";
         for (const auto& movie : recommendations) {
-            std::cout << "- ID: " << movie.getId() << " | 제목: " << movie.getTitle() << " | 장르: " << movie.getGenre() << "\n";
+            std::cout << "- 제목: " << movie.getTitle() << " | 장르: " << movie.getGenre() << "\n";
         }
+    } else {
+        std::cout << "영화 데이터가 로드되지 않았습니다.\n";
     }
 
     movieMgr.saveToFile("data/movies.csv");
-    userMgr.saveToFile("data/users.csv");
-    ratingMgr.saveToFile("data/ratings.csv");
-
     return 0;
 }
