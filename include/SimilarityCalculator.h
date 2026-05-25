@@ -1,12 +1,13 @@
 #ifndef SIMILARITY_CALCULATOR_H
 #define SIMILARITY_CALCULATOR_H
 
-#include <string>
+#include <vector>
+#include "Rating.h"
 
 class SimilarityCalculator {
 public:
-    // 두 영화의 장르를 비교해 동일 장르면 100점, 다르면 0점을 반환
-    static int calculateGenreSimilarity(const std::string& genreA, const std::string& genreB);
+    // 장르 문자열 비교를 제거하고, 유저 평점 기반 함수로 변경
+    static double calculateUserSimilarity(const std::vector<Rating>& userA, const std::vector<Rating>& userB);
 };
 
 #endif
