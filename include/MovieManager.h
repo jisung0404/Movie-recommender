@@ -5,12 +5,16 @@
 #include "Movie.h"
 #include <vector>
 #include <string>
+#include <unordered_map> // 고속 인덱싱 캐시 맵 레이어
 
 class RatingManager;
 
 class MovieManager : public BaseManager {
 private:
     std::vector<Movie> movies;
+    // ID 및 제목 기반 수색 속도를 O(N)에서 O(1)로 줄이는 해시 인덱스 테이블
+    std::unordered_map<int, size_t> idMap;
+    std::unordered_map<std::string, size_t> titleMap;
 
 public:
     void loadFromFile(const std::string& filename) override;
@@ -19,10 +23,10 @@ public:
 
     void addMovie(const Movie& movie);
     Movie* findByTitle(const std::string& title);
-    Movie* findById(int id); // 협업 필터링 역추적을 위해 선언 추가
+    Movie* findById(int id);
     void printAll() const;
+    void printSortedByRating(const RatingManager& ratingMgr) const; // 4번 전용 메서드
     
-    // 인자 구성을 (유저 ID, 평점 매니저 대장 참조)로 변경하여 협업 필터링 규격으로 개조
     std::vector<Movie> recommend(int targetUserId, const RatingManager& ratingMgr, int N = 5);
 };
 
