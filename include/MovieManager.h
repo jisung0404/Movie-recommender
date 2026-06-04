@@ -23,24 +23,20 @@ public:
     void addMovie(const Movie& movie);
     void printAll() const;
 
-    // 협업 필터링 역추적을 위해 선언 추가
     Movie* findById(int id); 
     Movie* findByTitle(const std::string& title);
     
-    // 인자 구성을 (유저 ID, 평점 매니저 대장 참조)로 변경하여 협업 필터링 규격으로 개조
     std::vector<Movie> recommend(int targetUserId, const RatingManager& ratingMgr, int N = 5);
-
-    // 평점 매니저 대장 참조를 활용한 인메모리 동기화 함수
     void syncMovieRatings(const RatingManager& ratingMgr);
 
-    // [확장 기능] 대소문자 무시 및 부분 일치 검색을 위한 함수 정의
+    // [확장 요건 4번] 대소문자 무시 및 부분 일치 검색 함수
     std::vector<Movie> searchMoviesEnhanced(const std::string& query) const;
 
-    // [확장 기능] 단일 책임 원칙에 따라 평점순으로 정렬된 영화 리스트를 반환하는 함수
-    std::vector<std::pair<double, Movie>> getMoviesSortedByRating(const RatingManager& ratingMgr) const;
+    // [확장 요건 2번] 실시간 전체 평점 평균 및 인기 지표 통계를 계산하고 화면에 출력하는 함수
+    std::vector<std::pair<double, Movie>> printAdvancedStatistics(const RatingManager& ratingMgr) const;
 
-    // [확장 기능] 단일 책임 원칙에 따라 정렬된 데이터를 CSV 파일로 저장하는 함수
-    void exportSortedMoviesToCSV(const std::vector<std::pair<double, Movie>>& sortedMovies, const std::string& exportFilename) const;
+    // [확장 요건 6번] 오직 통계 결과 데이터를 받아 외부 CSV 파일로 내보내는 저장 전담 함수
+    void exportStatisticsToCSV(const std::vector<std::pair<double, Movie>>& sortedMovies, const std::string& exportFilename) const;
 };
 
 #endif

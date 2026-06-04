@@ -10,11 +10,9 @@ int main() {
     UserManager userMgr;
     RatingManager ratingMgr;
 
-    // 초기 CSV 로드 단행
     movieMgr.loadFromFile("data/movies.csv");
     userMgr.loadFromFile("data/users.csv");
     ratingMgr.loadFromFile("data/ratings.csv");
-
     movieMgr.syncMovieRatings(ratingMgr);
     
     int menuChoice = -1;
@@ -26,7 +24,7 @@ int main() {
         std::cout << " 1. 새로운 영화 추가\n";
         std::cout << " 2. 영화 제목으로 검색 [검색 강화형]\n";
         std::cout << " 3. 영화 전체 목록 출력\n";
-        std::cout << " 4. 영화 평점순 랭킹 정렬 출력 [CSV 강화형]\n";
+        std::cout << " 4. 영화 평점 통계 리포트 및 내보내기 [통계 기능 & CSV 강화형]\n";
         std::cout << " 5. 새로운 사용자 추가\n";
         std::cout << " 6. 사용자 전체 목록 출력\n";
         std::cout << " 7. 새로운 평점 입력\n";
@@ -89,20 +87,15 @@ int main() {
                 break;
             }
             case 4: {
-                std::cout << "\n--- [4] 평점 통계 랭킹 차트 가동 및 외부 파일 내보내기 ---\n";
+                std::cout << "\n--- [4] 평점 통계 분석 실행 및 리포트 내보내기 ---\n";
                 
-                // 1단계: 정렬된 결과 벡터 데이터를 독립적으로 가져옵니다
-                std::vector<std::pair<double, Movie>> sortedChart = movieMgr.getMoviesSortedByRating(ratingMgr);
+                // 1단계: 2번 통계 기능을 호출하여 화면에 수치들을 뿌리고 결과 랭킹 리스트를 받아옵니다
+                std::vector<std::pair<double, Movie>> computedChart = movieMgr.printAdvancedStatistics(ratingMgr);
                 
-                // 2단계: main 제어반에서 화면 출력을 전담합니다
-                std::cout << "\n[+] 실시간 평점순 랭킹 현황\n";
-                for (size_t i = 0; i < sortedChart.size(); ++i) {
-                    std::cout << "  " << i + 1 << "위 -> [평점: " << sortedChart[i].first << "점] " << sortedChart[i].second << "\n";
-                }
-
-                // 3단계: 전용 저장 함수를 독립 호출하여 CSV 파일 강화를 단행합니다
-                movieMgr.exportSortedMoviesToCSV(sortedChart, "data/statistics_report.csv");
-                std::cout << "\n[+] CSV 파일 강화 완료: 통계 데이터가 'data/statistics_report.csv' 경로에 안전하게 저장되었습니다.\n";
+                // 2단계: 6번 CSV 강화 기능을 독립적으로 호출하여 통계 결과 장부를 보존합니다
+                movieMgr.exportStatisticsToCSV(computedChart, "data/statistics_report.csv");
+                
+                std::cout << "\n[+] CSV 파일 강화 완료: 통계 결과 리포트가 'data/statistics_report.csv' 경로에 영구 저장되었습니다.\n";
                 break;
             }
             case 5: {

@@ -6,8 +6,8 @@
 #include <sstream>
 #include <algorithm>
 #include <set>
+#include <map>
 
-// 문자열을 소문자로 변환하기 위한 헬퍼 함수
 static std::string toLowerCase(std::string str) {
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
     return str;
@@ -62,7 +62,6 @@ Movie* MovieManager::findByTitle(const std::string& title) {
     return nullptr;
 }
 
-// O(1) 고속 수색 가동
 Movie* MovieManager::findById(int id) {
     auto it = idMap.find(id);
     if (it != idMap.end()) return &movies[it->second];
@@ -73,14 +72,12 @@ void MovieManager::printAll() const {
     for (const auto& m : movies) std::cout << m << "\n";
 }
 
-// [확장 기능] 부분 일치 및 대소문자 무시 기반의 영화 검색 로직 구현
 std::vector<Movie> MovieManager::searchMoviesEnhanced(const std::string& query) const {
     std::vector<Movie> foundMovies;
     std::string lowerQuery = toLowerCase(query);
 
     for (const auto& m : movies) {
         std::string lowerTitle = toLowerCase(m.getTitle());
-        // 대상 영화 제목에 검색 키워드가 포함되어 있는지 검증합니다
         if (lowerTitle.find(lowerQuery) != std::string::npos) {
             foundMovies.push_back(m);
         }
@@ -88,11 +85,21 @@ std::vector<Movie> MovieManager::searchMoviesEnhanced(const std::string& query) 
     return foundMovies;
 }
 
-// [확장 기능] 평점순 정렬 책임을 전담하는 함수 구현
-std::vector<std::pair<double, Movie>> MovieManager::getMoviesSortedByRating(const RatingManager& ratingMgr) const {
+// [확장 요건 2번 통계 기능 구현부]: 실시간 수치 연산 및 화면 대시보드 리포팅 출력 책임 완수
+std::vector<std::pair<double, Movie>> MovieManager::printAdvancedStatistics(const RatingManager& ratingMgr) const {
     std::vector<std::pair<double, Movie>> sortedMovies;
+    
+    double totalScoreSum = 0.0;
+    int totalTrafficCount = 0;
+    std::map<std::string, int> genreFrequencyMap; // 장르 빈도수 카운팅 장부
+
     for (const auto& m : movies) {
-        sortedMovies.push_back({ratingMgr.getAverageRating(m.getId()), m});
+        double avg = ratingMgr.getAverageRating(m.getId());
+        sortedMovies.push_back({avg, m});
+        
+        totalScoreSum += (avg * m.getRatingCount());
+        totalTrafficCount += m.getRatingCount();
+        genreFrequencyMap[m.getGenre()]++;
     }
 
     // 람다 함수 기반 평점 높은 순 정렬
@@ -100,11 +107,37 @@ std::vector<std::pair<double, Movie>> MovieManager::getMoviesSortedByRating(cons
         return a.first > b.first;
     });
 
+    // 최다 보유 장르 스캔
+    std::string mostPopularGenre = "None";
+    int maxGenreCount = -1;
+    for (const auto& pair : genreFrequencyMap) {
+        if (pair.second > maxGenreCount) {
+            maxGenreCount = pair.second;
+            mostPopularGenre = pair.first;
+        }
+    }
+
+    double systemGlobalAverage = (totalTrafficCount == 0) ? 0.0 : totalScoreSum / totalTrafficCount;
+
+    // 정돈된 텍스트 양식으로 콘솔창에 통계 리포트를 출력합니다
+    std::cout << "\n===================================================\n";
+    std::cout << "[-] 시스템 통합 통계 분석 데이터 요약\n";
+    std::cout << "===================================================\n";
+    std::cout << " * 전체 플랫폼 누적 평점 평균: " << systemGlobalAverage << " 점\n";
+    std::cout << " * 데이터베이스 총 평점 등록 건수: " << totalTrafficCount << " 건\n";
+    std::cout << " * 플랫폼 내 최다 보유 강세 장르: " << mostPopularGenre << " (총 " << maxGenreCount << "개 보유)\n";
+    std::cout << "===================================================\n";
+
+    std::cout << "\n[+] 실시간 평점순 랭킹 차트 현황\n";
+    for (size_t i = 0; i < sortedMovies.size(); ++i) {
+        std::cout << "  " << i + 1 << "위 -> [평점: " << sortedMovies[i].first << "점] " << sortedMovies[i].second << "\n";
+    }
+
     return sortedMovies;
 }
 
-// [확장 기능] 정렬된 데이터를 받아 외부 CSV 파일로 출력하는 책임만 전담하는 함수 구현
-void MovieManager::exportSortedMoviesToCSV(const std::vector<std::pair<double, Movie>>& sortedMovies, const std::string& exportFilename) const {
+// [확장 요건 6번 CSV 강화 구현부]: 화면 출력 간섭 없이 순수하게 파일 스트림 저장 책임을 완수
+void MovieManager::exportStatisticsToCSV(const std::vector<std::pair<double, Movie>>& sortedMovies, const std::string& exportFilename) const {
     std::ofstream exportFile(exportFilename);
     if (!exportFile.is_open()) {
         std::cout << "[!] 통계 리포트 파일 생성에 실패하였습니다.\n";
@@ -125,7 +158,6 @@ void MovieManager::exportSortedMoviesToCSV(const std::vector<std::pair<double, M
 
 std::vector<Movie> MovieManager::recommend(int targetUserId, const RatingManager& ratingMgr, int N) {
     std::vector<Movie> recommendedList;
-    
     std::vector<Rating> myRatings = ratingMgr.findByUser(targetUserId);
     if (myRatings.empty()) return recommendedList;
 
@@ -138,11 +170,9 @@ std::vector<Movie> MovieManager::recommend(int targetUserId, const RatingManager
 
     for (int otherId : allUsers) {
         if (otherId == targetUserId) continue;
-
         std::vector<Rating> otherRatings = ratingMgr.findByUser(otherId);
         if (otherRatings.empty()) continue;
 
-        // 코사인 유사도 연산 가동
         double sim = SimilarityCalculator::calculateUserSimilarity(myRatings, otherRatings);
         if (sim > maxSim) {
             maxSim = sim;
@@ -150,19 +180,14 @@ std::vector<Movie> MovieManager::recommend(int targetUserId, const RatingManager
         }
     }
 
-    // 취향이 겹치는 이웃이 전멸한 경우 예외 처리 빈 배열 리턴
     if (bestNeighborId == -1 || maxSim <= 0.0) return recommendedList;
 
-    // 3. 선출된 이웃이 높은 점수를 준 영화 리스트를 1회용 익명(람다) 함수 정렬로 수집
     std::vector<Rating> neighborRatings = ratingMgr.findByUser(bestNeighborId);
-    
-    // 람다 함수 기반 평점 높은 순 정렬
     std::sort(neighborRatings.begin(), neighborRatings.end(), [](const Rating& a, const Rating& b) {
         return a.getScore() > b.getScore();
     });
 
     for (const auto& r : neighborRatings) {
-        // 이웃이 호평(3.5점 이상)했고, 내가 보지 않은 영화만 선출
         if (r.getScore() >= 3.5 && myWatched.find(r.getMovieId()) == myWatched.end()) {
             Movie* mPtr = findById(r.getMovieId()); 
             if (mPtr != nullptr) recommendedList.push_back(*mPtr);
@@ -177,7 +202,6 @@ std::vector<Movie> MovieManager::recommend(int targetUserId, const RatingManager
 }
 
 void MovieManager::syncMovieRatings(const RatingManager& ratingMgr) {
-    //  평점 매니저가 들고 있는 모든 유저의 평점 트래픽을 순회
     std::vector<int> allUsers = ratingMgr.getAllUserIds();
     for (int uId : allUsers) {
         std::vector<Rating> userRatings = ratingMgr.findByUser(uId);
