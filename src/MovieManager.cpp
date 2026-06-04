@@ -7,6 +7,12 @@
 #include <algorithm>
 #include <set>
 
+// 문자열을 소문자로 변환하기 위한 헬퍼 함수
+static std::string toLowerCase(std::string str) {
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    return str;
+}
+
 void MovieManager::loadFromFile(const std::string& filename) {
     movies.clear();
     idMap.clear();
@@ -45,20 +51,18 @@ int MovieManager::size() const { return movies.size(); }
 
 void MovieManager::addMovie(const Movie& movie) { 
     movies.push_back(movie); 
-    // 추가 즉시 O(1) 캐시 인덱스 테이블에 주소 맵핑
     size_t newIdx = movies.size() - 1;
     idMap[movie.getId()] = newIdx;
     titleMap[movie.getTitle()] = newIdx;
 }
 
-// 최적화: 루프 순회 제거, 맵 기반 O(1) 수색 작동
 Movie* MovieManager::findByTitle(const std::string& title) {
     auto it = titleMap.find(title);
     if (it != titleMap.end()) return &movies[it->second];
     return nullptr;
 }
 
-// 최적화: 루프 순회 제거, 맵 기반 O(1) 수색 작동
+// O(1) 고속 수색 가동
 Movie* MovieManager::findById(int id) {
     auto it = idMap.find(id);
     if (it != idMap.end()) return &movies[it->second];
@@ -69,22 +73,56 @@ void MovieManager::printAll() const {
     for (const auto& m : movies) std::cout << m << "\n";
 }
 
-// 4번 메뉴용: 영화 객체의 평점 기반 내림차순 정렬 출력 기법
-void MovieManager::printSortedByRating(const RatingManager& ratingMgr) const {
+// [확장 기능] 부분 일치 및 대소문자 무시 기반의 영화 검색 로직 구현
+std::vector<Movie> MovieManager::searchMoviesEnhanced(const std::string& query) const {
+    std::vector<Movie> foundMovies;
+    std::string lowerQuery = toLowerCase(query);
+
+    for (const auto& m : movies) {
+        std::string lowerTitle = toLowerCase(m.getTitle());
+        // 대상 영화 제목에 검색 키워드가 포함되어 있는지 검증합니다
+        if (lowerTitle.find(lowerQuery) != std::string::npos) {
+            foundMovies.push_back(m);
+        }
+    }
+    return foundMovies;
+}
+
+// [확장 기능] 평점순 정렬 책임을 전담하는 함수 구현
+std::vector<std::pair<double, Movie>> MovieManager::getMoviesSortedByRating(const RatingManager& ratingMgr) const {
     std::vector<std::pair<double, Movie>> sortedMovies;
     for (const auto& m : movies) {
         sortedMovies.push_back({ratingMgr.getAverageRating(m.getId()), m});
     }
-    // 평점 기준 내림차순 람다 정렬
+
+    // 람다 함수 기반 평점 높은 순 정렬
     std::sort(sortedMovies.begin(), sortedMovies.end(), [](const auto& a, const auto& b) {
         return a.first > b.first;
     });
-    for (size_t i = 0; i < sortedMovies.size(); ++i) {
-        std::cout << i + 1 << "위 (평점: " << sortedMovies[i].first << "점) -> " << sortedMovies[i].second << "\n";
-    }
+
+    return sortedMovies;
 }
 
-// 최적화가 결합된 9번 사용자 기반 협업 필터링 엔진
+// [확장 기능] 정렬된 데이터를 받아 외부 CSV 파일로 출력하는 책임만 전담하는 함수 구현
+void MovieManager::exportSortedMoviesToCSV(const std::vector<std::pair<double, Movie>>& sortedMovies, const std::string& exportFilename) const {
+    std::ofstream exportFile(exportFilename);
+    if (!exportFile.is_open()) {
+        std::cout << "[!] 통계 리포트 파일 생성에 실패하였습니다.\n";
+        return;
+    }
+
+    exportFile << "rank,movieId,title,averageRating,ratingCount\n";
+    for (size_t i = 0; i < sortedMovies.size(); ++i) {
+        const Movie& m = sortedMovies[i].second;
+        exportFile << (i + 1) << ","
+                   << m.getId() << ","
+                   << m.getTitle() << ","
+                   << sortedMovies[i].first << ","
+                   << m.getRatingCount() << "\n";
+    }
+    exportFile.close();
+}
+
 std::vector<Movie> MovieManager::recommend(int targetUserId, const RatingManager& ratingMgr, int N) {
     std::vector<Movie> recommendedList;
     
@@ -104,6 +142,7 @@ std::vector<Movie> MovieManager::recommend(int targetUserId, const RatingManager
         std::vector<Rating> otherRatings = ratingMgr.findByUser(otherId);
         if (otherRatings.empty()) continue;
 
+        // 코사인 유사도 연산 가동
         double sim = SimilarityCalculator::calculateUserSimilarity(myRatings, otherRatings);
         if (sim > maxSim) {
             maxSim = sim;
@@ -111,16 +150,21 @@ std::vector<Movie> MovieManager::recommend(int targetUserId, const RatingManager
         }
     }
 
+    // 취향이 겹치는 이웃이 전멸한 경우 예외 처리 빈 배열 리턴
     if (bestNeighborId == -1 || maxSim <= 0.0) return recommendedList;
 
+    // 3. 선출된 이웃이 높은 점수를 준 영화 리스트를 1회용 익명(람다) 함수 정렬로 수집
     std::vector<Rating> neighborRatings = ratingMgr.findByUser(bestNeighborId);
+    
+    // 람다 함수 기반 평점 높은 순 정렬
     std::sort(neighborRatings.begin(), neighborRatings.end(), [](const Rating& a, const Rating& b) {
         return a.getScore() > b.getScore();
     });
 
     for (const auto& r : neighborRatings) {
+        // 이웃이 호평(3.5점 이상)했고, 내가 보지 않은 영화만 선출
         if (r.getScore() >= 3.5 && myWatched.find(r.getMovieId()) == myWatched.end()) {
-            Movie* mPtr = findById(r.getMovieId()); // O(1) 고속 수색 가동
+            Movie* mPtr = findById(r.getMovieId()); 
             if (mPtr != nullptr) recommendedList.push_back(*mPtr);
         }
     }
@@ -138,10 +182,8 @@ void MovieManager::syncMovieRatings(const RatingManager& ratingMgr) {
     for (int uId : allUsers) {
         std::vector<Rating> userRatings = ratingMgr.findByUser(uId);
         for (const auto& r : userRatings) {
-            // 평점이 부여된 대상 영화 객체를 O(1) 해시 테이블로 수색
             Movie* mPtr = findById(r.getMovieId());
             if (mPtr != nullptr) {
-                // 영화 객체 내부에 평점 데이터 누적 적재! (totalRating, ratingCount 갱신)
                 mPtr->addRating(r.getScore());
             }
         }

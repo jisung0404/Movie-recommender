@@ -21,12 +21,12 @@ int main() {
 
     while (true) {
         std::cout << "\n===================================================\n";
-        std::cout << "▶ 최적화 추천 엔진\n";
+        std::cout << "[+] 최적화 확장형 추천 엔진 시스템 제어반\n";
         std::cout << "===================================================\n";
         std::cout << " 1. 새로운 영화 추가\n";
-        std::cout << " 2. 영화 제목으로 검색\n";
+        std::cout << " 2. 영화 제목으로 검색 [검색 강화형]\n";
         std::cout << " 3. 영화 전체 목록 출력\n";
-        std::cout << " 4. 영화 평점순 랭킹 정렬 출력\n";
+        std::cout << " 4. 영화 평점순 랭킹 정렬 출력 [CSV 강화형]\n";
         std::cout << " 5. 새로운 사용자 추가\n";
         std::cout << " 6. 사용자 전체 목록 출력\n";
         std::cout << " 7. 새로운 평점 입력\n";
@@ -46,11 +46,11 @@ int main() {
         std::cin.ignore();
 
         if (menuChoice == 0) {
-            std::cout << "\n데이터 백업 및 가상 영구 데이터 저장을 가동합니다...\n";
+            std::cout << "\n데이터 백업 및 영구 데이터 저장을 가동합니다...\n";
             movieMgr.saveToFile("data/movies.csv");
             userMgr.saveToFile("data/users.csv");
             ratingMgr.saveToFile("data/ratings.csv");
-            std::cout << "시스템 데이터 영구 보존 완료.\n";
+            std::cout << "[+] 시스템 데이터 영구 보존 프로세스가 완료되었습니다.\n";
             break;
         }
 
@@ -63,16 +63,24 @@ int main() {
                 std::cout << "영화 장르 입력: "; std::getline(std::cin, genre);
                 std::cout << "영화 개봉 연도 입력: "; std::cin >> year; std::cin.ignore();
                 movieMgr.addMovie(Movie(id, title, genre, year));
-                std::cout << "🎬 신규 영화 마스터 데이터 등록 완료.\n";
+                std::cout << "[+] 신규 영화 마스터 데이터 등록이 완료되었습니다.\n";
                 break;
             }
             case 2: {
-                std::cout << "\n--- [2] O(1) 고속 영화 제목 검색 ---\n";
-                std::string searchTitle;
-                std::cout << "검색할 영화의 정확한 제목 입력: "; std::getline(std::cin, searchTitle);
-                Movie* mPtr = movieMgr.findByTitle(searchTitle);
-                if (mPtr == nullptr) std::cout << "[X] 해당 영화를 장부에서 찾을 수 없습니다.\n";
-                else std::cout << "색 결과 발견 ->  " << *mPtr << "\n";
+                std::cout << "\n--- [2] 영화 검색 (부분 일치 및 대소문자 무시) ---\n";
+                std::string query;
+                std::cout << "검색하고자 하는 영화의 제목 키워드 입력: ";
+                std::getline(std::cin, query);
+
+                std::vector<Movie> searchResult = movieMgr.searchMoviesEnhanced(query);
+                if (searchResult.empty()) {
+                    std::cout << "[!] 입력하신 키워드 '" << query << "'를 포함하는 영화가 존재하지 않습니다.\n";
+                } else {
+                    std::cout << "[+] 총 " << searchResult.size() << "건의 영화 데이터 매칭 발견:\n";
+                    for (const auto& m : searchResult) {
+                        std::cout << "  - " << m << "\n";
+                    }
+                }
                 break;
             }
             case 3: {
@@ -81,8 +89,20 @@ int main() {
                 break;
             }
             case 4: {
-                std::cout << "\n--- [4] 대중 평균 평점순 랭킹 오더 출력 ---\n";
-                movieMgr.printSortedByRating(ratingMgr);
+                std::cout << "\n--- [4] 평점 통계 랭킹 차트 가동 및 외부 파일 내보내기 ---\n";
+                
+                // 1단계: 정렬된 결과 벡터 데이터를 독립적으로 가져옵니다
+                std::vector<std::pair<double, Movie>> sortedChart = movieMgr.getMoviesSortedByRating(ratingMgr);
+                
+                // 2단계: main 제어반에서 화면 출력을 전담합니다
+                std::cout << "\n[+] 실시간 평점순 랭킹 현황\n";
+                for (size_t i = 0; i < sortedChart.size(); ++i) {
+                    std::cout << "  " << i + 1 << "위 -> [평점: " << sortedChart[i].first << "점] " << sortedChart[i].second << "\n";
+                }
+
+                // 3단계: 전용 저장 함수를 독립 호출하여 CSV 파일 강화를 단행합니다
+                movieMgr.exportSortedMoviesToCSV(sortedChart, "data/statistics_report.csv");
+                std::cout << "\n[+] CSV 파일 강화 완료: 통계 데이터가 'data/statistics_report.csv' 경로에 안전하게 저장되었습니다.\n";
                 break;
             }
             case 5: {
@@ -92,7 +112,7 @@ int main() {
                 std::cout << "유저 이름 입력: "; std::getline(std::cin, name);
                 std::cout << "유저 이메일 입력: "; std::getline(std::cin, email);
                 userMgr.addUser(User(id, name, email));
-                std::cout << "👤 신규 사용자 계정이 인덱싱 캐시에 추가되었습니다.\n";
+                std::cout << "[+] 신규 사용자 계정이 등록 완료되었습니다.\n";
                 break;
             }
             case 6: {
@@ -107,7 +127,8 @@ int main() {
                 std::cout << "대상 영화 ID 입력: "; std::cin >> mId;
                 std::cout << "평점 입력 (0.0 ~ 5.0): "; std::cin >> score; std::cin.ignore();
                 ratingMgr.addRating(uId, mId, score);
-                std::cout << "평점 트래픽 매핑이 완료되었습니다.\n";
+                movieMgr.syncMovieRatings(ratingMgr);
+                std::cout << "[+] 평점 트래픽 데이터 매핑이 완료되었습니다.\n";
                 break;
             }
             case 8: {
@@ -139,7 +160,7 @@ int main() {
                 break;
             }
             default:
-                std::cout << "[!] 잘못된 번호 선택입니다. 0번부터 9번 사이를 선택해 주세요.\n";
+                std::cout << "[!] 잘못된 번호 선택입니다. 0번부터 9번 사이를 재선택해 주세요.\n";
                 break;
         }
     }
