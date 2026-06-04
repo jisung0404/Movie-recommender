@@ -15,6 +15,8 @@ int main() {
     userMgr.loadFromFile("data/users.csv");
     ratingMgr.loadFromFile("data/ratings.csv");
 
+    movieMgr.syncMovieRatings(ratingMgr);
+    
     int menuChoice = -1;
 
     while (true) {

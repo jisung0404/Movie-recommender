@@ -27,6 +27,9 @@ public:
     void printAll() const;
     void printSortedByRating(const RatingManager& ratingMgr) const; // 4번 전용 메서드
     
+    // 평점 매니저의 데이터를 영화 객체들에 동기화하는 함수 신설
+    void syncMovieRatings(const RatingManager& ratingMgr);
+
     std::vector<Movie> recommend(int targetUserId, const RatingManager& ratingMgr, int N = 5);
 };
 

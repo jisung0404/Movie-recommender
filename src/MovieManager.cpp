@@ -131,3 +131,19 @@ std::vector<Movie> MovieManager::recommend(int targetUserId, const RatingManager
 
     return finalResult;
 }
+
+void MovieManager::syncMovieRatings(const RatingManager& ratingMgr) {
+    //  평점 매니저가 들고 있는 모든 유저의 평점 트래픽을 순회
+    std::vector<int> allUsers = ratingMgr.getAllUserIds();
+    for (int uId : allUsers) {
+        std::vector<Rating> userRatings = ratingMgr.findByUser(uId);
+        for (const auto& r : userRatings) {
+            // 평점이 부여된 대상 영화 객체를 O(1) 해시 테이블로 수색
+            Movie* mPtr = findById(r.getMovieId());
+            if (mPtr != nullptr) {
+                // 영화 객체 내부에 평점 데이터 누적 적재! (totalRating, ratingCount 갱신)
+                mPtr->addRating(r.getScore());
+            }
+        }
+    }
+}
