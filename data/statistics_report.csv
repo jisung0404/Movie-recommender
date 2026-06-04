@@ -1,0 +1,31 @@
+rank,movieId,title,averageRating,ratingCount
+1,14,The Godfather,4.9,3
+2,12,Whiplash,4.9,2
+3,19,Your Name,4.8,4
+4,10,Gladiator,4.8,1
+5,16,Fight Club,4.75,2
+6,13,Spirited Away,4.7,4
+7,3,Interstellar,4.65,4
+8,18,The Lion King,4.65,2
+9,20,Zootopia,4.6,2
+10,15,Forrest Gump,4.6,2
+11,2,Parasite,4.5,5
+12,17,Pulp Fiction,4.5,1
+13,7,Avatar,4.43333,3
+14,11,Titanic,4.43333,3
+15,8,Toy Story,4.25,2
+16,5,The Dark Knight,4.16,5
+17,6,La La Land,4.06,5
+18,1,Inception,3.82857,7
+19,9,The Matrix,3.43333,3
+20,4,About Time,2.875,4
+21,30,Memento,0,0
+22,29,The Prestige,0,0
+23,28,Frozen,0,0
+24,27,Notebook,0,0
+25,26,Star Wars,0,0
+26,25,The Shawshank Redemption,0,0
+27,24,Iron Man,0,0
+28,23,Coco,0,0
+29,22,Joker,0,0
+30,21,The Avengers,0,0
