@@ -1,4 +1,4 @@
-#include "Movie.h"
+#include "../include/Movie.h"
 #include <iostream>
 
 // 기본 생성자

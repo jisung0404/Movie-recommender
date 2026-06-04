@@ -67,7 +67,7 @@ std::vector<int> RatingManager::getAllUserIds() const {
 void RatingManager::printRatingsByMovie(int movieId) const {
     auto it = movieRatingsMap.find(movieId);
     if (it == movieRatingsMap.end() || it->second.empty()) {
-        std::cout << "⚠️ 누적된 평점 데이터가 존재하지 않는 영화입니다.\n";
+        std::cout << "[!] 누적된 평점 데이터가 존재하지 않는 영화입니다.\n";
         return;
     }
     for (const auto& r : it->second) {

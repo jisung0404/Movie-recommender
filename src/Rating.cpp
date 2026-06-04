@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Rating.h"
+#include "../include/Rating.h"
 
 using namespace std;
 
