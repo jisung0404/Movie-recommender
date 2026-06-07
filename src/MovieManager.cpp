@@ -165,8 +165,9 @@ std::vector<Movie> MovieManager::recommend(int targetUserId, const RatingManager
     for (const auto& r : myRatings) myWatched.insert(r.getMovieId());
 
     std::vector<int> allUsers = ratingMgr.getAllUserIds();
-    int bestNeighborId = -1;
-    double maxSim = -1.0;
+    
+    // [개선 포인트 1] 단 한 명이 아니라, 유사도가 있는 '모든 이웃'을 리스트에 수집
+    std::vector<std::pair<double, int>> neighbors;
 
     for (int otherId : allUsers) {
         if (otherId == targetUserId) continue;
@@ -174,31 +175,50 @@ std::vector<Movie> MovieManager::recommend(int targetUserId, const RatingManager
         if (otherRatings.empty()) continue;
 
         double sim = SimilarityCalculator::calculateUserSimilarity(myRatings, otherRatings);
-        if (sim > maxSim) {
-            maxSim = sim;
-            bestNeighborId = otherId;
+        if (sim > 0.0) { 
+            neighbors.push_back({sim, otherId}); // 유사도 0 이상인 이웃 전원 등록
         }
     }
 
-    if (bestNeighborId == -1 || maxSim <= 0.0) return recommendedList;
-
-    std::vector<Rating> neighborRatings = ratingMgr.findByUser(bestNeighborId);
-    std::sort(neighborRatings.begin(), neighborRatings.end(), [](const Rating& a, const Rating& b) {
-        return a.getScore() > b.getScore();
+    // [개선 포인트 2] 유사도가 높은 순(취향이 가장 비슷한 순)으로 이웃들을 내림차순 정렬
+    std::sort(neighbors.begin(), neighbors.end(), [](const auto& a, const auto& b) {
+        return a.first > b.first;
     });
 
-    for (const auto& r : neighborRatings) {
-        if (r.getScore() >= 3.5 && myWatched.find(r.getMovieId()) == myWatched.end()) {
-            Movie* mPtr = findById(r.getMovieId()); 
-            if (mPtr != nullptr) recommendedList.push_back(*mPtr);
+    std::set<int> recommendedMovieIds; // 중복 추천 방지용 셋(Set)
+
+    // [개선 포인트 3] 1위 이웃부터 순차적으로 물어보면서 N개의 영화를 채울 때까지 반복
+    for (const auto& neighbor : neighbors) {
+        int neighborId = neighbor.second;
+        std::vector<Rating> neighborRatings = ratingMgr.findByUser(neighborId);
+        
+        // 해당 이웃이 높게 평가한 순으로 정렬
+        std::sort(neighborRatings.begin(), neighborRatings.end(), [](const Rating& a, const Rating& b) {
+            return a.getScore() > b.getScore();
+        });
+
+        for (const auto& r : neighborRatings) {
+            // 이웃이 3.5점 이상 준 영화 중, 내가 아직 안 봤고, 아직 추천 리스트에 없는 영화라면 추가
+            if (r.getScore() >= 3.5 && 
+                myWatched.find(r.getMovieId()) == myWatched.end() && 
+                recommendedMovieIds.find(r.getMovieId()) == recommendedMovieIds.end()) {
+                
+                Movie* mPtr = findById(r.getMovieId()); 
+                if (mPtr != nullptr) {
+                    recommendedList.push_back(*mPtr);
+                    recommendedMovieIds.insert(r.getMovieId());
+                    
+                    // 목표 개수(N개)를 꽉 채우면 그 즉시 수색 종료
+                    if (recommendedList.size() == static_cast<size_t>(N)) { 
+                        return recommendedList;
+                    }
+                }
+            }
         }
     }
 
-    int actualN = std::min(N, (int)recommendedList.size());
-    std::vector<Movie> finalResult;
-    for (int i = 0; i < actualN; ++i) finalResult.push_back(recommendedList[i]);
-
-    return finalResult;
+    // N개를 다 못 채우더라도 지금까지 찾은 목록 반환
+    return recommendedList;
 }
 
 void MovieManager::syncMovieRatings(const RatingManager& ratingMgr) {
